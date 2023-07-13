@@ -1,6 +1,6 @@
 # freemusic
 
-**本项目通过selenium实现对[免费音乐网站](https://www.shiyinren.com"免费音乐网站")的访问及解析外链的获取**
+**本项目通过selenium实现对[免费音乐网站](https://shiyinren.com"免费音乐网站")的访问及解析外链的获取**
 
 
 
