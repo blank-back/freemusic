@@ -9,6 +9,9 @@ from remi import start, App
 from music import *
 import datetime
 from playsound import playsound
+import pygame
+
+
 
 class untitled(App):
     def __init__(self, *args, **kwargs):
@@ -18,6 +21,9 @@ class untitled(App):
         self.strsong=""
         self.strsinger=""
         self.answ=""
+        self.state = True
+        pygame.mixer.init()
+
 
     def main(self):
         return untitled.construct_ui(self)
@@ -180,6 +186,30 @@ class untitled(App):
         self.button1.onclick.connect(self.play)
         self.button1.variable_name = "button1"
         self.container0.append(self.button1,'button1')
+        self.button2 = Button()
+        self.button2.attr_class = "Button"
+        self.button2.attr_editor_newclass = False
+        self.button2.css_height = "30px"
+        self.button2.css_left = "693.4624938964844px"
+        self.button2.css_position = "absolute"
+        self.button2.css_top = "230px"
+        self.button2.css_width = "100px"
+        self.button2.text = "停止"
+        self.button2.onclick.connect(self.stop)
+        self.button2.variable_name = "button2"
+        self.container0.append(self.button2, 'button2')
+        self.button3 = Button()
+        self.button3.attr_class = "Button"
+        self.button3.attr_editor_newclass = False
+        self.button3.css_height = "30px"
+        self.button3.css_left = "693.4624938964844px"
+        self.button3.css_position = "absolute"
+        self.button3.css_top = "280px"
+        self.button3.css_width = "100px"
+        self.button3.text = "暂停"
+        self.button3.onclick.connect(self.pause)
+        self.button3.variable_name = "button3"
+        self.container0.append(self.button3, 'button3')
         return self.container0
 
     def sear(self, emitter):
@@ -215,7 +245,21 @@ class untitled(App):
             self.label3.set_text("正在下载：\n" + filename)
             urllib.request.urlretrieve(self.answ, "./temp/"+filename)
         self.label3.set_text("正在播放：\n" + filename)
-        playsound(os.getcwd()+"\\temp\\"+filename)
+        pygame.mixer.music.load(os.getcwd()+"\\temp\\"+filename)
+        pygame.mixer.music.play()
+
+    def stop(self, emitter):
+        self.label3.set_text("停止播放：\n")
+        pygame.mixer.music.stop()
+
+    def pause(self, emitter):
+        self.state= not self.state
+        if self.state:
+            self.label3.set_text("继续播放：\n")
+            pygame.mixer.music.unpause()
+        else:
+            self.label3.set_text("暂停播放：\n")
+            pygame.mixer.music.pause()
 
 #Configuration
 configuration = {'config_project_name': 'untitled', 'config_address': '0.0.0.0', 'config_port': 8081, 'config_multiple_instance': True, 'config_enable_file_cache': True, 'config_start_browser': True, 'config_resourcepath': './res/'}
