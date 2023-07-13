@@ -14,7 +14,7 @@
 > 注：若要运行请自行配置chrome webdriver环境
 
 ## 前端页面说明
-使用[remi](https://github.com/rawpython/remi"remi")进行搭建
+使用[remi](https://github.com/rawpython/remi)进行搭建
 
 ## 其它说明
 由于搜索页面和解析页面均为动态页面，urllib.request的方法无法获取到查询的具体内容，故改用selenium使用chrome webdriver访问，.
