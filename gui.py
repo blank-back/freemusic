@@ -1,7 +1,12 @@
 
 # -*- coding: utf-8 -*-
+import os
 import time
 import urllib.request
+
+import PIL
+import requests
+from PIL.Image import Resampling
 
 from editor import *
 from remi.gui import *
@@ -10,24 +15,31 @@ from music import *
 import datetime
 from playsound import playsound
 import pygame
+import base64
+from PIL import Image
+from io import BytesIO
+import io
 
 
-
-class untitled(App):
+class Freemusic(App):
     def __init__(self, *args, **kwargs):
         #DON'T MAKE CHANGES HERE, THIS METHOD GETS OVERWRITTEN WHEN SAVING IN THE EDITOR
         # if not 'editing_mode' in kwargs.keys():
-        super(untitled, self).__init__(*args, static_file_path={'my_res':'./res/'})
+        super(Freemusic, self).__init__(*args, static_file_path={'my_res':'./res/'})
         self.strsong=""
         self.strsinger=""
         self.answ=""
         self.stroth=""
         self.state = True
         pygame.mixer.init()
+        self.bgi=[]
+        self.bginum=self.getbgi()
+
+
 
 
     def main(self):
-        return untitled.construct_ui(self)
+        return Freemusic.construct_ui(self)
 
     @staticmethod
     def construct_ui(self):
@@ -35,7 +47,6 @@ class untitled(App):
         self.container0 = Container()
         self.container0.attr_class = "Container"
         self.container0.attr_editor_newclass = False
-        self.container0.css_background_image = "url('D:\pythonProject13\editor\1.jpg')"
         self.container0.css_height = "960px"
         self.container0.css_left = "200px"
         self.container0.css_position = "absolute"
@@ -175,6 +186,7 @@ class untitled(App):
         self.label3.text = "输出结果"
         self.label3.variable_name = "label3"
         self.label3.css_white_space = "pre-line"
+        self.label3.css_background_color = "rgb(255,255,255)"
         self.container0.append(self.label3, 'label3')
         self.button1 = Button()
         self.button1.attr_class = "Button"
@@ -268,12 +280,64 @@ class untitled(App):
         self.label6.text = ""
         self.label6.css_white_space = "pre-line"
         self.label6.variable_name = "label6"
+        self.label6.css_background_color = "rgb(255,255,255)"
         self.container0.append(self.label6, 'label6')
         self.button3.onclick.connect(self.pause)
         self.button1.onclick.connect(self.play)
         self.button0.onclick.connect(self.sear)
         self.button2.onclick.connect(self.stop)
-
+        self.dropdown0 = DropDown()
+        self.dropdown0.attr_class = "DropDown"
+        self.dropdown0.attr_editor_newclass = False
+        self.dropdown0.css_border_color = "rgb(120,240,120)"
+        self.dropdown0.css_border_radius = "2px"
+        self.dropdown0.css_border_style = "solid"
+        self.dropdown0.css_border_width = "2px"
+        self.dropdown0.css_height = "30px"
+        self.dropdown0.css_left = "276px"
+        self.dropdown0.css_position = "absolute"
+        self.dropdown0.css_top = "80%"
+        self.dropdown0.css_width = "100px"
+        self.dropdown0.variable_name = "dropdown0"
+        for i in range(self.getbgi()):
+            dropdownitem1 = DropDownItem()
+            dropdownitem1.attr_class = "DropDownItem"
+            dropdownitem1.attr_editor_newclass = False
+            dropdownitem1.text = "背景"+str(i)
+            dropdownitem1.value = "背景"+str(i)
+            dropdownitem1.variable_name = "dropdownitem"+str(i)
+            self.dropdown0.append(dropdownitem1, "dropdownitem"+str(i))
+        self.dropdown0.onchange.connect(self.changebgi)
+        self.container0.append(self.dropdown0, 'dropdown0')
+        self.label7 = Label()
+        self.label7.attr_class = "Label"
+        self.label7.attr_editor_newclass = False
+        self.label7.css_background_color = "rgb(160,255,255)"
+        self.label7.css_font_weight = "bold"
+        self.label7.css_height = "30px"
+        self.label7.css_left = "89px"
+        self.label7.css_position = "absolute"
+        self.label7.css_text_align = "center"
+        self.label7.css_top = "80%"
+        self.label7.css_width = "100px"
+        self.label7.text = "切换背景"
+        self.label7.variable_name = "label7"
+        self.container0.append(self.label7, 'label7')
+        print("construct over")
+        if len(self.bgi) != 0:
+            self.changebgicore(0)
+        self.button5 = Button()
+        self.button5.attr_class = "Button"
+        self.button5.attr_editor_newclass = False
+        self.button5.css_height = "30px"
+        self.button5.css_left = "900px"
+        self.button5.css_position = "absolute"
+        self.button5.css_top = "80%"
+        self.button5.css_width = "100px"
+        self.button5.text = "随机背景"
+        self.button5.variable_name = "button5"
+        self.container0.append(self.button5, 'button5')
+        self.button5.onclick.connect(self.getrndpic)
         return self.container0
 
     def sear(self, emitter):
@@ -351,12 +415,40 @@ class untitled(App):
         print("deststr:",deststr)
         self.label6.set_text(deststr)
 
+    def changebgi(self, emitter, value):
+        value=int(value[2:])
+        self.changebgicore(value)
+
+    def changebgicore(self, value):
+        path1=os.getcwd()+"/res/"+self.bgi[value]
+        file = PIL.Image.open(path1)
+        out = file.resize((1080, 960), Resampling.LANCZOS)
+        buffer = io.BytesIO()
+        out.save(buffer,format="PNG")
+        encoded = base64.b64encode(buffer.getvalue())
+        #tempstr="https://img0.baidu.com/it/u=3021883569,1259262591&fm=253&fmt=auto&app=120&f=JPEG?w=1140&h=641"
+        dict1={'background-image': "url('"+"data:image/png;base64,"+encoded.decode()+"')"}
+        self.container0.set_style(dict1)
+
+    def getbgi(self):
+        for _,_,i in os.walk(os.getcwd()+"/res"):
+            self.bgi=i
+            return len(i)
+
+    def getrndpic(self, emitter):
+        s = requests.session()
+        s.keep_alive = False
+        encoded = base64.b64encode(requests.get('https://source.unsplash.com/random/1080x960',verify=False).content)
+        dict1 = {'background-image': "url('" + "data:image/png;base64," + encoded.decode() + "')"}
+        self.container0.set_style(dict1)
+
+
 #Configuration
 configuration = {'config_project_name': 'untitled', 'config_address': '0.0.0.0', 'config_port': 8081, 'config_multiple_instance': True, 'config_enable_file_cache': True, 'config_start_browser': True, 'config_resourcepath': './res/'}
 
 if __name__ == "__main__":
     # start(MyApp,address='127.0.0.1', port=8081, multiple_instance=False,enable_file_cache=True, update_interval=0.1, start_browser=True)
-    start(untitled, address=configuration['config_address'], port=configuration['config_port'], 
+    start(Freemusic, address=configuration['config_address'], port=configuration['config_port'],
                         multiple_instance=configuration['config_multiple_instance'], 
                         enable_file_cache=configuration['config_enable_file_cache'],
                         start_browser=configuration['config_start_browser'])
